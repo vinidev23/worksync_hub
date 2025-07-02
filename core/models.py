@@ -32,7 +32,7 @@ class Content(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='contents', verbose_name='Equipe')
     is_published = models.BooleanField(default=False, verbose_name='Publicado')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Criado em')
-    update_at = models.DateTimeField(auto_now=True, verbose_name='Atualizado em')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Atualizado em')
 
     class Meta:
         verbose_name='Conteúdo'

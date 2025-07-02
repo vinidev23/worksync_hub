@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Meus aplicativos
     'core',
+    # Django Rest Framework
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
