@@ -1,22 +1,43 @@
-const API_BASE_URL = "http://127.0.0.1:8000/api/";
+const API_BASE_URL = "http://127.0.0.1:8000/api";
 
-function getAuthToken() {
-  const token = "01150d1d899b1233bd005a787f76ded1329beba8";
-  return token ? `Token ${token}` : "";
-}
+const getAuthToken = () => {
+  return localStorage.getItem("access_token");
+};
+
+const fetcher = async (url, options = {}) => {
+  const token = getAuthToken();
+  const headers = {
+    "Content-Type": "application/json",
+    ...options.headers,
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(url, { ...options, headers });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      console.error("Token expirado ou inválido. Redirecionando para login.");
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      window.location.href = "/login";
+    }
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      errorData.detail ||
+        `Erro HTTP: ${response.status} - ${response.statusText}`
+    );
+  }
+
+  return response.json();
+};
 
 export const fetchTeams = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}teams/`, {
-      headers: {
-        Authorization: getAuthToken(),
-      },
-    });
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || `Erro HTTP: ${response.status}`);
-    }
-    return await response.json();
+    const data = await fetcher(`${API_BASE_URL}/teams/`);
+    return data;
   } catch (error) {
     console.error("Erro ao buscar equipes:", error);
     throw error;
@@ -25,16 +46,8 @@ export const fetchTeams = async () => {
 
 export const fetchContent = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}content/`, {
-      headers: {
-        Authorization: getAuthToken(),
-      },
-    });
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || `Erro HTTP: ${response.status}`);
-    }
-    return await response.json();
+    const data = await fetcher(`${API_BASE_URL}/content/`);
+    return data;
   } catch (error) {
     console.error("Erro ao buscar conteúdo:", error);
     throw error;
