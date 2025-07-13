@@ -53,3 +53,41 @@ export const fetchContent = async () => {
     throw error;
   }
 };
+
+export const createContent = async (contentData) => {
+  try {
+    const data = await fetcher(`${API_BASE_URL}/content/`, {
+      method: "POST",
+      body: JSON.stringify(contentData),
+    });
+    return data;
+  } catch (error) {
+    console.error("Erro ao criar conteúdo:", error);
+    throw error;
+  }
+};
+
+export const updateContent = async (id, contentData) => {
+  try {
+    const data = await fetcher(`${API_BASE_URL}/content/${id}/`, {
+      method: "PUT",
+      body: JSON.stringify(contentData),
+    });
+    return data;
+  } catch (error) {
+    console.error(`Erro ao editar conteúdo ${id}:`, error);
+    throw error;
+  }
+};
+
+export const deleteContent = async (id) => {
+  try {
+    await fetcher(`${API_BASE_URL}/content/${id}/`, {
+      method: "DELETE",
+    });
+    return null;
+  } catch (error) {
+    console.error(`Erro ao excluir conteúdo ${id}:`, error);
+    throw error;
+  }
+};

@@ -5,37 +5,24 @@ from .models import Team, Content
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name']
-        
+        fields = ['id', 'username', 'email']
+
 class TeamSerializer(serializers.ModelSerializer):
-    members = serializers.SlugRelatedField(
-        many = True,
-        read_only = True,
-        slug_field = 'username'
-    )
-    
+    members = UserSerializer(many=True, read_only=True)
+
     class Meta:
         model = Team
-        fields = ['id', 'name', 'description', 'members', 'created_at', 'updated_at']
-        realy_only_fields = ['created_at', 'updated_at']
-        
+        fields = ['id', 'name', 'description', 'members']
+
 class ContentSerializer(serializers.ModelSerializer):
-    author = serializers.ReadOnlyField(source='author.username')
-    team_name = serializers.ReadOnlyField(source='team.name')
-    
+    author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
+    author_username = serializers.CharField(source='author.username', read_only=True)
+    team = serializers.PrimaryKeyRelatedField(queryset=Team.objects.all())
+    team_name = serializers.CharField(source='team.name', read_only=True)
+
     class Meta:
         model = Content
-        fields = [
-            'id',
-            'title',
-            'slug',
-            'content_text',
-            'content_type',
-            'author',
-            'team',
-            'team_name',
-            'is_published',
-            'created_at',
-            'updated_at'
-        ]
-        read_only_fields = ['created_at', 'updated_at', 'author', 'slug']
+        fields = ['id', 'title', 'slug', 'content_text', 'content_type',
+                  'author', 'author_username', 'team', 'team_name',
+                  'created_at', 'updated_at', 'is_published']
+        read_only_fields = ['slug', 'created_at', 'updated_at', 'is_published']
