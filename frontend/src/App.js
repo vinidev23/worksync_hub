@@ -103,13 +103,13 @@ function Dashboard() {
   }
 
   return (
-    <main style={{ padding: "20px" }}>
-      <section style={{ marginBottom: "40px" }}>
+    <main className="main-content">
+      <section className="section-block">
         <h2>Equipes</h2>
         {teams.length > 0 ? (
-          <ul>
+          <ul className="list-unstyled">
             {teams.map((team) => (
-              <li key={team.id}>
+              <li key={team.id} className="list-item">
                 <strong>{team.name}</strong>: {team.description} (
                 {team.members.length} membros)
               </li>
@@ -120,20 +120,9 @@ function Dashboard() {
         )}
       </section>
 
-      <section>
+      <section className="section-block">
         <h2>Conteúdo</h2>
-        <button
-          onClick={handleCreateNew}
-          style={{
-            padding: "10px 15px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-            marginBottom: "20px",
-          }}
-        >
+        <button onClick={handleCreateNew} className="btn btn-primary">
           Criar Novo Conteúdo
         </button>
 
@@ -146,18 +135,9 @@ function Dashboard() {
         )}
 
         {content.length > 0 ? (
-          <ul style={{ listStyle: "none", padding: 0 }}>
+          <ul className="list-unstyled">
             {content.map((item) => (
-              <li
-                key={item.id}
-                style={{
-                  border: "1px solid #eee",
-                  padding: "15px",
-                  marginBottom: "10px",
-                  borderRadius: "5px",
-                  backgroundColor: "#f9f9f9",
-                }}
-              >
+              <li key={item.id} className="content-item">
                 <h3>
                   {item.title} ({item.content_type})
                 </h3>
@@ -166,31 +146,16 @@ function Dashboard() {
                   <strong>{item.team_name}</strong>
                 </p>
                 <p>{item.content_text.substring(0, 200)}...</p>
-                <div style={{ marginTop: "10px" }}>
+                <div className="content-actions">
                   <button
                     onClick={() => handleEdit(item)}
-                    style={{
-                      padding: "8px 12px",
-                      backgroundColor: "#ffc107",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                      marginRight: "10px",
-                    }}
+                    className="btn btn-warning"
                   >
                     Editar
                   </button>
                   <button
                     onClick={() => handleDelete(item.id)}
-                    style={{
-                      padding: "8px 12px",
-                      backgroundColor: "#dc3545",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                    }}
+                    className="btn btn-danger"
                   >
                     Excluir
                   </button>
@@ -223,44 +188,15 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <header
-          className="App-header"
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "20px",
-            backgroundColor: "#333",
-            color: "white",
-          }}
-        >
+        <header className="App-header">
           <h1>Worksync Hub - Dashboard</h1>
           <nav>
             {isAuthenticated ? (
-              <button
-                onClick={handleLogout}
-                style={{
-                  padding: "8px 12px",
-                  backgroundColor: "#6c757d",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                }}
-              >
+              <button onClick={handleLogout} className="btn btn-secondary">
                 Sair
               </button>
             ) : (
-              <Link
-                to="/login"
-                style={{
-                  padding: "8px 12px",
-                  backgroundColor: "#007bff",
-                  color: "white",
-                  textDecoration: "none",
-                  borderRadius: "5px",
-                }}
-              >
+              <Link to="/login" className="btn btn-primary">
                 Login
               </Link>
             )}

@@ -1,4 +1,3 @@
-// frontend/src/Login.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -41,14 +40,18 @@ const Login = ({ setAuth }) => {
   return (
     <div
       style={{
+        width: "100%",
         padding: "20px",
-        maxWidth: "400px",
+        maxWidth: "500px",
         margin: "50px auto",
-        border: "1px solid #1c1c1c",
+        boxShadow:
+          "rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px",
         borderRadius: "8px",
       }}
     >
-      <h2>Login</h2>
+      <div style={{ justifyContent: "center", display: "flex" }}>
+        <h2>WorkSync Hub - Login</h2>
+      </div>
       <form onSubmit={handleLogin}>
         <div style={{ marginBottom: "15px" }}>
           <label
@@ -95,6 +98,7 @@ const Login = ({ setAuth }) => {
         <button
           type="submit"
           style={{
+            width: "100%",
             padding: "10px 15px",
             backgroundColor: "#007bff",
             color: "white",

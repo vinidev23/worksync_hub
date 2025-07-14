@@ -2,12 +2,12 @@ import React, { useState, useEffect } from "react";
 import { fetchTeams } from "./api";
 
 const ContentForm = ({ content = {}, onSubmit, onCancel }) => {
-  const [title, setTitle] = useState(content.title || "");
-  const [contentText, setContentText] = useState(content.content_text || "");
+  const [title, setTitle] = useState(content?.title || "");
+  const [contentText, setContentText] = useState(content?.content_text || "");
   const [contentType, setContentType] = useState(
-    content.content_type || "article"
+    content?.content_type || "ARTICLE"
   );
-  const [team, setTeam] = useState(content.team || "");
+  const [team, setTeam] = useState(content?.team || "");
   const [teams, setTeams] = useState([]);
   const [error, setError] = useState(null);
 
@@ -18,6 +18,8 @@ const ContentForm = ({ content = {}, onSubmit, onCancel }) => {
         setTeams(teamsData);
         if (!team && teamsData.length > 0) {
           setTeam(teamsData[0].id);
+        } else if (content?.team && team !== content.team) {
+          setTeam(content.team);
         }
       } catch (err) {
         console.error("Erro ao carregar equipes para o formulário:", err);
@@ -25,7 +27,7 @@ const ContentForm = ({ content = {}, onSubmit, onCancel }) => {
       }
     };
     loadTeams();
-  }, [team]);
+  }, [team, content?.team]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -51,7 +53,7 @@ const ContentForm = ({ content = {}, onSubmit, onCancel }) => {
         marginBottom: "20px",
       }}
     >
-      <h3>{content.id ? "Editar Conteúdo" : "Novo Conteúdo"}</h3>
+      <h3>{content?.id ? "Editar Conteúdo" : "Novo Conteúdo"}</h3>
       {error && <p style={{ color: "red" }}>{error}</p>}
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: "10px" }}>
@@ -86,10 +88,10 @@ const ContentForm = ({ content = {}, onSubmit, onCancel }) => {
             style={{ width: "100%", padding: "8px", boxSizing: "border-box" }}
             required
           >
-            <option value="article">Artigo</option>
-            <option value="tutorial">Tutorial</option>
-            <option value="documentation">Documentação</option>
-            <option value="blog_post">Post de Blog</option>
+            <option value="ARTICLE">Artigo</option>
+            <option value="TUTORIAL">Tutorial</option>
+            <option value="DOCUMENTATION">Documentação</option>
+            <option value="BLOG_POST">Post de Blog</option>
           </select>
         </div>
         <div style={{ marginBottom: "10px" }}>
@@ -122,7 +124,7 @@ const ContentForm = ({ content = {}, onSubmit, onCancel }) => {
               cursor: "pointer",
             }}
           >
-            {content.id ? "Salvar Edição" : "Criar Conteúdo"}
+            {content?.id ? "Salvar Edição" : "Criar Conteúdo"}
           </button>
           <button
             type="button"

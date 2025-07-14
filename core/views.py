@@ -1,78 +1,67 @@
-from rest_framework import viewsets, permissions, status
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404
-from django.utils.text import slugify
+# worksync_hub/core/views.py
 
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
+from django.contrib.auth.models import User
 from .models import Team, Content
 from .serializers import UserSerializer, TeamSerializer, ContentSerializer
+from django.core.mail import send_mail
+from django.conf import settings
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = User.objects.all().order_by('username')
+    queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsAuthenticated]
 
 class TeamViewSet(viewsets.ModelViewSet):
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
-    def perform_create(self, serializer):
-        team = serializer.save()
-        team.members.add(self.request.user)
-
-    @action(detail=True, methods=['post', 'delete'], url_path='members')
-    def manage_members(self, request, pk=None):
-        team = get_object_or_404(Team, pk=pk)
-        if request.method == 'POST':
-            member_id = request.data.get('user_id')
-            try:
-                user = User.objects.get(id=member_id)
-                team.members.add(user)
-                return Response({'status': 'member added'}, status=status.HTTP_200_OK)
-            except User.DoesNotExist:
-                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-        elif request.method == 'DELETE':
-            member_id = request.data.get('user_id')
-            try:
-                user = User.objects.get(id=member_id)
-                team.members.remove(user)
-                return Response({'status': 'member removed'}, status=status.HTTP_200_OK)
-            except User.DoesNotExist:
-                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-        return Response({'status': 'invalid method'}, status=status.HTTP_400_BAD_REQUEST)
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 class ContentViewSet(viewsets.ModelViewSet):
     queryset = Content.objects.all()
     serializer_class = ContentSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
-    def perform_create(self, serializer):
-        if not self.request.user.is_authenticated:
-            raise permissions.exceptions.NotAuthenticated("Autenticação necessária para criar conteúdo.")
-
-        title = serializer.validated_data['title']
-        team = serializer.validated_data['team']
-        base_slug = slugify(title)
-        slug = base_slug
-        counter = 1
-        while Content.objects.filter(team=team, slug=slug).exists():
-            slug = f"{base_slug}-{counter}"
-            counter += 1
-
-        serializer.save(author=self.request.user, slug=slug)
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         user = self.request.user
-        print(f"DEBUG: Usuário da requisição para Content: {user.username} (Autenticado: {user.is_authenticated})")
-
         if user.is_authenticated:
-            queryset = Content.objects.filter(team__members=user, is_published=True).distinct()
-            print(f"DEBUG: Conteúdos encontrados para {user.username}: {queryset.count()} itens.")
-            for item in queryset:
-                print(f"  - ID: {item.id}, Título: {item.title}, Equipe: {item.team.name}, Publicado: {item.is_published}")
-            return queryset
-        
-        print("DEBUG: Usuário não autenticado para Content. Retornando nenhum conteúdo.")
+            user_teams_ids = user.teams.values_list('id', flat=True)
+            return Content.objects.filter(team__in=user_teams_ids).distinct()
         return Content.objects.none()
+
+    def perform_create(self, serializer):
+        new_content = serializer.save(author=self.request.user)
+
+        subject = f'Novo Conteúdo Criado: "{new_content.title}"'
+
+        context = {
+            'content_title': new_content.title,
+            'content_type': new_content.get_content_type_display(),
+            'author_username': new_content.author.username,
+            'team_name': new_content.team.name,
+            'content_url': f"http://localhost:3000/content/{new_content.id}"
+        }
+
+        html_message = render_to_string('email/new_content_notification.html', context)
+        plain_message = strip_tags(html_message)
+
+        recipient_list = [member.email for member in new_content.team.members.all() if member.email]
+
+        if recipient_list:
+            send_mail(
+                subject,
+                plain_message,
+                settings.DEFAULT_FROM_EMAIL,
+                recipient_list,
+                html_message=html_message,
+                fail_silently=False,
+            )
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        instance.delete()
